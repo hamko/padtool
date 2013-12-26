@@ -88,8 +88,7 @@ bool is_same_sets(int i, int j) {
 // returns 1, if i is weaker than j or the same storegth.
 bool check_upward_compatibility(int i, int j)
 {
-    if (!is_same_sets(i, j)) return 0;
-    return i >= j;
+    return c_attack[i] >= c_attack[j];
 }
 
 int main(int argc, char** argv)
