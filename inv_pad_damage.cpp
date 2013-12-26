@@ -26,30 +26,13 @@ void decimal_to_base(vi& ret, ull i, int base)
     }
 }
 
-class lessDamage {
-    public:
-        bool operator()(const vi& riLeft, const vi& riRight) const {
-            return riLeft[5] < riRight[5];
-        }
-};
-class lessNum {
-    public:
-        bool operator()(const vi& riLeft, const vi& riRight) const {
-            return riLeft[7] < riRight[7];
-        }
-};
+bool lessNum(const vi& riLeft, const vi& riRight) {
+    return riLeft[7] < riRight[7];
+}
 
 void arrange_candidacy_num(vector<vi>& candidacy, int num)
 {
-    sort(candidacy.begin(), candidacy.end(), lessNum());
-    if ((int)candidacy.size() <= num)
-        return;
-    auto it = candidacy.begin() + num;
-    candidacy.erase(it, candidacy.end());
-}
-void arrange_candidacy_damage(vector<vi>& candidacy, int num)
-{
-    sort(candidacy.begin(), candidacy.end(), lessDamage());
+    sort(candidacy.begin(), candidacy.end(), lessNum);
     if ((int)candidacy.size() <= num)
         return;
     auto it = candidacy.begin() + num;
@@ -114,7 +97,7 @@ int main(int argc, char** argv)
     // Drop Num
     vi drop_limit = {5, 6, 6, 10, 3, 0};
     // Enemy Color
-    int enemy_color = WHITE;
+    int enemy_color = BLACK;
     
     // realistic combo pattern
     init_repertorie();
@@ -137,12 +120,9 @@ int main(int argc, char** argv)
             if (flag) 
                 continue;
             // calc Damage
-            double damage = 0;
-            int combo = r;
-            int num = r * 3;
-            int anum = 0;
+            int damage = 0, combo = r, num = r * 3, anum = 0;
             for (int i = 0; i < COLOR_NUM; i++) {
-               damage += (double)attack[i] * c_attack[drop[i]] * damage_table[i][enemy_color];
+               damage += (int)((double)attack[i] * c_attack[drop[i]] * damage_table[i][enemy_color]);
                combo += c_combo[drop[i]];
                num += c_num[drop[i]];
                anum += (c_num[drop[i]] > 0 ? attacknum[i] : 0);
@@ -193,9 +173,8 @@ int main(int argc, char** argv)
         int damage = candidacy[c][5], combo = candidacy[c][6], num = candidacy[c][7], r = candidacy[c][8];
         for (int i = 0; i < COLOR_NUM; i++) {
             cout << color_string[i];
-            for (int j = 0; j < (int)repertoire[candidacy[c][i]].size(); j++) {
+            for (int j = 0; j < (int)repertoire[candidacy[c][i]].size(); j++) 
                 cout << repertoire[candidacy[c][i]][j];
-            }
             cout << "\t";
         }
         cout << "Heart" << r << "(set)" << "\t";
