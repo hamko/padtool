@@ -9,6 +9,7 @@ using namespace std;
 #define CUT_NUM 1000
 #define ARRANGE_NUM_NUM 100
 #define vi vector<int>
+#define next atoi(argv[argi++])
 enum {RED, BLUE, GREEN, WHITE, BLACK, COLOR_NUM};
 string color_string[COLOR_NUM] = {"Red", "Blue", "Green", "White", "Black"};
 
@@ -83,29 +84,34 @@ bool check_upward_compatibility(int i, int j)
 
 int main(int argc, char** argv)
 {
+    int argi = 1;
+    if (argc != 20) {
+        cout << "Lacking for Input." << argc << endl;
+        return 1;
+    }
+    // Objective
+    int objective = next;
+    int defense = next;
+    // Enemy Color
+    int enemy_color = next; 
+    double lskill = next;
     // Attack
     vi attack(COLOR_NUM); // red, blue, gree, white, black
-    attack[RED]     = 1314;
-    attack[BLUE]    = 1194;
-    attack[GREEN]   = 403;
-    attack[WHITE]   = 3949;
-    attack[BLACK]   = 1709;
-    vi attacknum = {1, 1, 1, 3, 2};
+    attack[RED]     = next;
+    attack[BLUE]    = next;
+    attack[GREEN]   = next;
+    attack[WHITE]   = next;
+    attack[BLACK]   = next;
     // Drop Num
+    vi drop_limit = {next, next, next, next, next, next};
+    // Attacker Num
+    vi attacknum = {next, next, next, next, next};
+    // Leader Skill Condition
+    vi lcond = {next, next, next, next, next, next};
+    
     // Leader Skill Correction
-    double lskill = 25.0;
     for (int i = 0; i < COLOR_NUM; i++) 
         attack[i] *= lskill;
-    // Leader Skill Condition
-    vi lcond = {1, 1, 1, 1, 0};
-    // Objective
-    int objective = argc > 1 ? atoi(argv[1]) : 100000;
-    int defense = argc > 2 ? atoi(argv[2]) : 0;
-    // Drop Num
-    vi drop_limit = {5, 6, 6, 10, 3, 0};
-    // Enemy Color
-    int enemy_color = BLACK;
-    
     // realistic combo pattern
     init_repertorie();
 
@@ -124,7 +130,7 @@ int main(int argc, char** argv)
                     flag = 1;
                     break;
                 }
-            if (flag) 
+            if (flag || lcond[5] > r) 
                 continue;
             // calc Damage
             int damage = 0, combo = r, num = r * 3, anum = 0;
