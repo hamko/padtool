@@ -130,7 +130,7 @@ int main(int argc, char** argv)
                     flag = 1;
                     break;
                 }
-            if (flag || lcond[5] > r) 
+            if (flag)
                 continue;
             // calc Damage
             int damage = 0, combo = r, num = r * 3, anum = 0;
