@@ -1,7 +1,14 @@
-#include <hamkoutil.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+using namespace std;
+
 #define BASE 20
 #define CUT_NUM 1000
 #define ARRANGE_NUM_NUM 100
+#define vi vector<int>
 enum {RED, BLUE, GREEN, WHITE, BLACK, COLOR_NUM};
 string color_string[COLOR_NUM] = {"Red", "Blue", "Green", "White", "Black"};
 
@@ -132,7 +139,7 @@ int main(int argc, char** argv)
             // add candidacy
             if (damage > objective) {
                 vi tmp = {drop[0], drop[1], drop[2], drop[3], drop[4], (int)damage, combo, num, r};
-                candidacy.pb(tmp);
+                candidacy.push_back(tmp);
                 if (candidacy.size() > CUT_NUM)
                     arrange_candidacy_num(candidacy, ARRANGE_NUM_NUM);
             }

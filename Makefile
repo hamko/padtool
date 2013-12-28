@@ -1,4 +1,4 @@
-CFLAGS = -g -Wall --std=c++11 -O3
+CFLAGS = -g -Wall --std=c++0x -O3
 LFLAGS = -lm
 all: a.out
 
