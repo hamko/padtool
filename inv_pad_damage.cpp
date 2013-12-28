@@ -153,6 +153,7 @@ int main(int argc, char** argv)
     }
 
     // Compatibility
+    // for i
     for (auto iti = candidacy.begin(); iti != candidacy.end();) {
         int flag = 0;
         for (auto itj = candidacy.begin(); itj != candidacy.end(); itj++) {
@@ -160,22 +161,26 @@ int main(int argc, char** argv)
                 continue;
             int faf = 1;
             for (int h = 0; h < COLOR_NUM; h++) {
-                if (!check_upward_compatibility((*iti)[h], (*itj)[h])) {
+                if (!((*iti)[h] >= (*itj)[h])) {
                     faf = 0;
                     break;
                 }
             }
-            if (faf) {
+            if (!((*iti)[8] >= (*itj)[8]))
+                faf = 0;
+            if (!faf) {
+                continue;
+            } else if (faf) {
                 flag = 1;
                 break;
             }
         }
         if (flag)
             iti = candidacy.erase(iti, iti + 1);
-        else 
+        else
             iti++;
     }
-    
+
     // Output 
     arrange_candidacy_num(candidacy, ARRANGE_NUM_NUM);
     if (candidacy.size() == 0) {
