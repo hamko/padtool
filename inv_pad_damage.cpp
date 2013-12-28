@@ -85,7 +85,7 @@ bool check_upward_compatibility(int i, int j)
 int main(int argc, char** argv)
 {
     int argi = 1;
-    if (argc != 20) {
+    if (argc != 27) {
         cout << "Lacking for Input." << argc << endl;
         return 1;
     }
