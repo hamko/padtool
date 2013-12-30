@@ -3,12 +3,14 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <ctime>
 using namespace std;
 
-#define BASE 20
 #define CUT_NUM 1000
 #define ARRANGE_NUM_NUM 100
 #define vi vector<int>
+#define vvi vector<vector<int> >
+#define vd vector<int>
 #define next atoi(argv[argi++])
 enum {RED, BLUE, GREEN, WHITE, BLACK, COLOR_NUM};
 string color_string[COLOR_NUM] = {"Red", "Blue", "Green", "White", "Black"};
@@ -48,110 +50,41 @@ void arrange_candidacy_num(vector<vi>& candidacy, int num)
 }
 
 // Repertorie and compatibility
-vi repertoire[BASE] = {
-    {}, // 0-0
-    {3}, {4}, {5}, // 1-3
-    {3, 3}, {3, 4}, {3, 5}, {4, 4}, {4, 5}, {5, 5}, // 4-9
-    {3, 3, 3}, {3, 3, 4}, {3, 3, 5}, {3, 4, 4}, {3, 4, 5}, 
-    {3, 5, 5}, {4, 4, 4}, {4, 4, 5}, {4, 5, 5}, {5, 5, 5}, // 10-19
+int base;
+vvi repertoire;
+vvi brutal_repertoire = {
+    {}, {3}, {4}, {5}, {3, 3}, {3, 4}, {3, 5}, {4, 4}, {4, 5}, {5, 5},
+    {3, 3, 3}, {3, 3, 4}, {3, 3, 5}, {3, 4, 4}, {3, 4, 5}, {3, 5, 5}, {4, 4, 4}, {4, 4, 5}, {4, 5, 5}, {5, 5, 5},
 };
-double c_attack[BASE] = {};
-int c_num[BASE] = {};
-int c_combo[BASE] = {};
+vvi smart_repertoire = {
+    {}, {3}, {4}, {5}, {3, 3}, {3, 4}, {3, 5},
+    {3, 3, 3}, {3, 3, 4}, {3, 3, 5}, {3, 3, 3, 3}
+};
+vd c_attack = {};
+vi c_num = {};
+vi c_combo = {};
 void init_repertorie(void)
 {
-    for (int i = 0; i < BASE; i++) {
+    // set repertoire
+//    repertoire = brutal_repertoire;
+    repertoire = smart_repertoire;
+
+    // init
+    base = (int)repertoire.size();
+    c_attack = vd(base);
+    c_num = vi(base);
+    c_combo = vi(base);
+    for (int i = 0; i < (int)repertoire.size(); i++) {
         for (int j = 0; j < (int)repertoire[i].size(); j++) {
             c_attack[i] += (1 + 0.25 * (repertoire[i][j] - 3));
             c_num[i] += repertoire[i][j]; 
         }
         c_combo[i] = (int)repertoire[i].size();
     }
+}
 
-}
-bool is_same_sets(int i, int j) {
-    if (i == 0 && j == 0) return 1;
-    if (1 <= i && i <= 3 && 1 <= j && j <= 3) return 1;
-    if (4 <= i && i <= 9 && 4 <= j && j <= 9) return 1;
-    if (10 <= i && i <= 19 && 10 <= j && j <= 19) return 1;
-    return 0;
-}
-// returns 1, if i is weaker than j or the same storegth.
-bool check_upward_compatibility(int i, int j)
+void cut_with_compatibility(vector<vi>& candidacy)
 {
-    return c_attack[i] >= c_attack[j];
-}
-
-int main(int argc, char** argv)
-{
-    int argi = 1;
-    if (argc != 27) {
-        cout << "Lacking for Input." << argc << endl;
-        return 1;
-    }
-    // Objective
-    int objective = next;
-    int defense = next;
-    // Enemy Color
-    int enemy_color = next; 
-    double lskill = next;
-    // Attack
-    vi attack(COLOR_NUM); // red, blue, gree, white, black
-    attack[RED]     = next;
-    attack[BLUE]    = next;
-    attack[GREEN]   = next;
-    attack[WHITE]   = next;
-    attack[BLACK]   = next;
-    // Drop Num
-    vi drop_limit = {next, next, next, next, next, next};
-    // Attacker Num
-    vi attacknum = {next, next, next, next, next};
-    // Leader Skill Condition
-    vi lcond = {next, next, next, next, next, next};
-    
-    // Leader Skill Correction
-    for (int i = 0; i < COLOR_NUM; i++) 
-        attack[i] *= lskill;
-    // realistic combo pattern
-    init_repertorie();
-
-    vector<vi> candidacy;
-    for (int r = 0; r <= 3; r++) {
-        if (r * 3 > drop_limit[COLOR_NUM])
-            continue;
-        for (ull d = 0; d < (ull)pow(BASE, (int)COLOR_NUM); d++) {
-            vi drop(COLOR_NUM);
-            // get drop cond
-            decimal_to_base(drop, d, BASE);
-            // LSkill Cond
-            bool flag = 0;
-            for (int i = 0; i < COLOR_NUM; i++) 
-                if (lcond[i] > c_num[drop[i]] || drop_limit[i] < c_num[drop[i]]) {
-                    flag = 1;
-                    break;
-                }
-            if (flag || lcond[5] > r) 
-                continue;
-            // calc Damage
-            int damage = 0, combo = r, num = r * 3, anum = 0;
-            for (int i = 0; i < COLOR_NUM; i++) {
-               damage += (int)((double)attack[i] * c_attack[drop[i]] * damage_table[i][enemy_color]);
-               combo += c_combo[drop[i]];
-               num += c_num[drop[i]];
-               anum += (c_num[drop[i]] > 0 ? attacknum[i] : 0);
-            }
-            damage *= (0.75 + 0.25 * combo);
-            damage -= anum * defense;
-            // add candidacy
-            if (damage > objective) {
-                vi tmp = {drop[0], drop[1], drop[2], drop[3], drop[4], (int)damage, combo, num, r};
-                candidacy.push_back(tmp);
-                if (candidacy.size() > CUT_NUM)
-                    arrange_candidacy_num(candidacy, ARRANGE_NUM_NUM);
-            }
-        }
-    }
-
     // Compatibility
     // for i
     for (auto iti = candidacy.begin(); iti != candidacy.end();) {
@@ -180,6 +113,82 @@ int main(int argc, char** argv)
         else
             iti++;
     }
+}
+
+int main(int argc, char** argv)
+{
+    // arg check
+    int argi = 1;
+    if (argc != 27) {
+        cout << "Lacking for Input." << argc << endl;
+        return 1;
+    }
+
+    // clock 
+    clock_t start = clock(), end;
+
+    // Enemy
+    int objective = next;
+    int defense = next;
+    int enemy_color = next; 
+    // Leader Skill Rate
+    double lskill = next;
+    // Attack
+    vi attack = {next, next, next, next, next}; // red, blue, gree, white, black
+    // Drop Num
+    vi drop_limit = {next, next, next, next, next, next};
+    // Attacker Num
+    vi attacknum = {next, next, next, next, next};
+    // Leader Skill Condition
+    vi lcond = {next, next, next, next, next, next};
+    
+    // Leader Skill Correction
+    for (int i = 0; i < COLOR_NUM; i++) 
+        attack[i] *= lskill;
+    // realistic combo pattern
+    init_repertorie();
+
+    vector<vi> candidacy;
+    for (int r = 0; r <= 3; r++) {
+        if (r * 3 > drop_limit[COLOR_NUM])
+            continue;
+        for (ull d = 0; d < (ull)pow(base, (int)COLOR_NUM); d++) {
+            vi drop(COLOR_NUM);
+            // get drop cond
+            decimal_to_base(drop, d, base);
+            // LSkill Cond
+            bool flag = 0;
+            for (int i = 0; i < COLOR_NUM; i++) 
+                if (lcond[i] > c_num[drop[i]] || drop_limit[i] < c_num[drop[i]]) {
+                    flag = 1;
+                    break;
+                }
+            if (flag || lcond[5] > r) 
+                continue;
+            // calc Damage
+            int damage = 0, combo = r, num = r * 3, anum = 0;
+            for (int i = 0; i < COLOR_NUM; i++) {
+               damage += (int)((double)attack[i] * c_attack[drop[i]] * damage_table[i][enemy_color]);
+               combo += c_combo[drop[i]];
+               num += c_num[drop[i]];
+               anum += (c_num[drop[i]] > 0 ? attacknum[i] : 0);
+            }
+            damage *= (0.75 + 0.25 * combo);
+            damage -= anum * defense;
+            // add candidacy
+            if (damage > objective) {
+                vi tmp = {drop[0], drop[1], drop[2], drop[3], drop[4], (int)damage, combo, num, r};
+                candidacy.push_back(tmp);
+                if (candidacy.size() > CUT_NUM) {
+                    cut_with_compatibility(candidacy);
+//                    arrange_candidacy_num(candidacy, ARRANGE_NUM_NUM);
+
+                }
+            }
+        }
+    }
+
+    cut_with_compatibility(candidacy);
 
     // Output 
     arrange_candidacy_num(candidacy, ARRANGE_NUM_NUM);
@@ -198,6 +207,8 @@ int main(int argc, char** argv)
         cout << "Heart" << r << "(set)" << "\t";
         cout << "(combo: " << combo << ", num: " << num << ", damage: " << damage << ")" << endl;
     }
+
+    end = clock(); printf("(%.2f sec)\n",(double)(end-start)/CLOCKS_PER_SEC);
 
     return 0;
 }
