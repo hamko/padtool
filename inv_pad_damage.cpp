@@ -178,7 +178,7 @@ int main(int argc, char** argv)
     // Attacker Num
     vi attacknum = {next, next, next, next, next};
     // Leader Skill Condition
-    skill_func lskill_func, fskill_func;
+    skill_func lskill_func = NULL, fskill_func = NULL;
     set_lfskill(lskill_func, next);
     set_lfskill(fskill_func, next);
     
