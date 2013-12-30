@@ -239,7 +239,7 @@ int main(int argc, char** argv)
             }
         }
     }
-    end = clock(); printf("(%.3f sec)\n",(double)(end-start)/CLOCKS_PER_SEC);
+    // end = clock(); printf("(%.3f sec)\n",(double)(end-start)/CLOCKS_PER_SEC);
 
     // Output 
     cut_with_compatibility(candidacy);
@@ -259,7 +259,6 @@ int main(int argc, char** argv)
         cout << "Heart" << r << "(set)" << "\t";
         cout << "(combo: " << combo << ", num: " << num << ", damage: " << damage << ")" << endl;
     }
-
 
     return 0;
 }
