@@ -165,7 +165,7 @@ int main(int argc, char** argv)
     }
 
     // clock 
-    clock_t start = clock(), end;
+//    clock_t start = clock(), end;
 
     // Enemy
     int objective = next;
