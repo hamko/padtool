@@ -10,6 +10,8 @@ using namespace std;
 #define vi vector<int>
 #define vvi vector<vector<int> >
 #define vd vector<int>
+#define all(x) (x).begin(), (x).end()
+#define itr(x) decltype(begin(x))
 #define next atoi(argv[argi++])
 typedef double (*skill_func)(const vi&, const int&, const int&);
 enum {RED, BLUE, GREEN, WHITE, BLACK, COLOR_NUM};
@@ -18,7 +20,7 @@ string color_string[COLOR_NUM] = {"Red", "Blue", "Green", "White", "Black"};
 typedef unsigned long long ull;
 
 template <class T, class LAMBDA>
-bool forall(T b, T e, LAMBDA l) {
+bool for_all(T b, T e, LAMBDA l) {
     int faf = 1;
     for (T it = b; it != e; it++) {
         if (!l(it)) {
@@ -28,8 +30,8 @@ bool forall(T b, T e, LAMBDA l) {
     }
     return faf;
 }
-template <class T, class LAMBDA>
-bool forall(T b, T e, LAMBDA l, LAMBDA l_found) {
+template <class T, class LAMBDA, class LAMBDA_PROC>
+bool for_all(T b, T e, LAMBDA l, LAMBDA_PROC l_found) {
     int faf = 1;
     for (T it = b; it != e; it++) {
         if (!l(it)) {
@@ -41,14 +43,14 @@ bool forall(T b, T e, LAMBDA l, LAMBDA l_found) {
     return faf;
 }
 template <class T, class LAMBDA>
-bool thereexists(T b, T e, LAMBDA l)
+bool there_exists(T b, T e, LAMBDA l)
 {
-    return !forall(b, e, [l](T it) {return !l(it);});
+    return !for_all(b, e, [l](T it) {return !l(it);});
 }
-template <class T, class LAMBDA>
-bool thereexists(T b, T e, LAMBDA l, LAMBDA l_found)
+template <class T, class LAMBDA, class LAMBDA_PROC>
+bool there_exists(T b, T e, LAMBDA l, LAMBDA_PROC l_found)
 {
-    return !forall(b, e, [l](T it) {return !l(it);}, l_found);
+    return !for_all(b, e, [l](T it) {return !l(it);}, l_found);
 }
 
 // damage_table[i][j]: rate of attack i->j
@@ -132,27 +134,7 @@ void cut_with_compatibility(vector<vi>& candidacy)
     // Compatibility
     // for i
     for (auto iti = candidacy.begin(); iti != candidacy.end();) {
-        int flag = 0;
-        for (auto itj = candidacy.begin(); itj != candidacy.end(); itj++) {
-            if (iti == itj)
-                continue;
-            int faf = 1;
-            for (int h = 0; h < COLOR_NUM; h++) {
-                if (!((*iti)[h] >= (*itj)[h])) {
-                    faf = 0;
-                    break;
-                }
-            }
-            if (!((*iti)[8] >= (*itj)[8]))
-                faf = 0;
-            if (!faf) {
-                continue;
-            } else if (faf) {
-                flag = 1;
-                break;
-            }
-        }
-        if (flag)
+        if (there_exists(all(candidacy), [&](itr(candidacy) itj) { return iti != itj && (*iti)[8] >= (*itj)[8] && for_all(0, (int)COLOR_NUM, [&](int h){ return (*iti)[h] >= (*itj)[h]; });}))
             iti = candidacy.erase(iti, iti + 1);
         else
             iti++;
@@ -228,39 +210,21 @@ int main(int argc, char** argv)
             // get drop cond
             decimal_to_base(drop, d, base);
             // DropNum Cond and Pruning
-
-#if 1
-//            bool flag = thereexists(0, (int)COLOR_NUM, [&](int i) { if (drop_limit[i] < c_num[drop[i]]) { drop[i] = base - 1; return 1; } else return 0; });
-            bool flag = thereexists(0, (int)COLOR_NUM, [&](int i) { if (drop_limit[i] < c_num[drop[i]]) { drop[i] = base - 1; return 1; } else return 0; });
-#else
-            bool flag = 0;
-            for (int i = 0; i < COLOR_NUM; i++) 
-                if (
-                    drop[i] = base - 1;
-                    flag = 1;
-                    break;
-                }
-#endif
-            if (flag) {
+            if (there_exists(0, (int)COLOR_NUM, [&](int i) { return drop_limit[i] < c_num[drop[i]]; }, [&](int i) { drop[i] = base - 1;})) {
                 d = base_to_decimal(drop, base);
                 continue;
             }
             // Pruning
-            if (candidacy.size() && drop[0] >= candidacy[0][0] &&
-                    drop[1] >= candidacy[0][1] && drop[2] >= candidacy[0][2] &&
-                    drop[3] >= candidacy[0][3] && drop[4] >= candidacy[0][4]) {
+            if (candidacy.size() && for_all(0, (int)COLOR_NUM, [&](int i) { return drop[i] >= candidacy[0][i]; })) {
                 drop[4] = base - 1;
                 d = base_to_decimal(drop, base);
                 continue;
             }
-
-
             // LSkill Cond
             int combo = r;
             for (int i = 0; i < COLOR_NUM; i++) 
                 combo += c_combo[drop[i]];
             double lskill = lskill_func(drop, r, combo) * fskill_func(drop, r, combo);
-
             // calc Damage
             int damage = 0, num = r * 3, anum = 0;
             for (int i = 0; i < COLOR_NUM; i++) {
@@ -284,21 +248,20 @@ int main(int argc, char** argv)
     // Output 
     cut_with_compatibility(candidacy);
     arrange_candidacy_num(candidacy, ARRANGE_NUM_NUM);
-    if (candidacy.size() == 0) {
+    if (!candidacy.size()) {
         cout << "No Result!" << endl;
         return 0;
     }
-    for (int c = 0; c < (int)candidacy.size(); c++) {
-        int damage = candidacy[c][5], combo = candidacy[c][6], num = candidacy[c][7], r = candidacy[c][8];
+    for_each(all(candidacy), [&](vi& c) {
+        int damage = c[5], combo = c[6], num = c[7], r = c[8];
         for (int i = 0; i < COLOR_NUM; i++) {
             cout << color_string[i];
-            for (int j = 0; j < (int)repertoire[candidacy[c][i]].size(); j++) 
-                cout << repertoire[candidacy[c][i]][j];
+            for_each(all(repertoire[c[i]]), [&](int r) {cout << r;});
             cout << "\t";
         }
         cout << "Heart" << r << "(set)" << "\t";
         cout << "(combo: " << combo << ", num: " << num << ", damage: " << damage << ")" << endl;
-    }
+    });
 
     return 0;
 }
