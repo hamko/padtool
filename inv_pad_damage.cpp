@@ -17,6 +17,40 @@ string color_string[COLOR_NUM] = {"Red", "Blue", "Green", "White", "Black"};
 
 typedef unsigned long long ull;
 
+template <class T, class LAMBDA>
+bool forall(T b, T e, LAMBDA l) {
+    int faf = 1;
+    for (T it = b; it != e; it++) {
+        if (!l(it)) {
+            faf = 0;
+            break;
+        }
+    }
+    return faf;
+}
+template <class T, class LAMBDA>
+bool forall(T b, T e, LAMBDA l, LAMBDA l_found) {
+    int faf = 1;
+    for (T it = b; it != e; it++) {
+        if (!l(it)) {
+            faf = 0;
+            l_found(it);
+            break;
+        }
+    }
+    return faf;
+}
+template <class T, class LAMBDA>
+bool thereexists(T b, T e, LAMBDA l)
+{
+    return !forall(b, e, [l](T it) {return !l(it);});
+}
+template <class T, class LAMBDA>
+bool thereexists(T b, T e, LAMBDA l, LAMBDA l_found)
+{
+    return !forall(b, e, [l](T it) {return !l(it);}, l_found);
+}
+
 // damage_table[i][j]: rate of attack i->j
 const double damage_table[COLOR_NUM][COLOR_NUM] = {
     {1.0, 0.5, 2.0, 1.0, 1.0, }, 
@@ -76,7 +110,7 @@ vi c_combo = {};
 void init_repertorie(void)
 {
     // set repertoire
-//    repertoire = brutal_repertoire;
+    //    repertoire = brutal_repertoire;
     repertoire = smart_repertoire;
 
     // init
@@ -194,13 +228,19 @@ int main(int argc, char** argv)
             // get drop cond
             decimal_to_base(drop, d, base);
             // DropNum Cond and Pruning
+
+#if 1
+//            bool flag = thereexists(0, (int)COLOR_NUM, [&](int i) { if (drop_limit[i] < c_num[drop[i]]) { drop[i] = base - 1; return 1; } else return 0; });
+            bool flag = thereexists(0, (int)COLOR_NUM, [&](int i) { if (drop_limit[i] < c_num[drop[i]]) { drop[i] = base - 1; return 1; } else return 0; });
+#else
             bool flag = 0;
             for (int i = 0; i < COLOR_NUM; i++) 
-                if (drop_limit[i] < c_num[drop[i]]) {
+                if (
                     drop[i] = base - 1;
                     flag = 1;
                     break;
                 }
+#endif
             if (flag) {
                 d = base_to_decimal(drop, base);
                 continue;
